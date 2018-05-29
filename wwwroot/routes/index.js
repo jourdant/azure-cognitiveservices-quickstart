@@ -19,7 +19,7 @@ router.post('/upload', function(req, res) {
   
   // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
   let file = toFile(req.body.data).then(file => {
-    var key = "f29da4567c3d4d92afcdc8663be6dc6f";
+    var key = process.env.CV_KEY;
     var uriBase = "https://australiaeast.api.cognitive.microsoft.com/vision/v2.0/analyze";
 
     request({
