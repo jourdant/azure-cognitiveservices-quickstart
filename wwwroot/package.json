@@ -4,7 +4,7 @@
   "description": "A quickstart tutorial for Microsoft Azure and Cognitive Services",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./server.js"
   },
   "repository": {
     "type": "git",
