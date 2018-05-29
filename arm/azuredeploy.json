@@ -2,13 +2,6 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "webSiteName": {
-        "type": "string",
-        "minLength": 1,
-        "metadata": {
-          "description": "Name of the Azure Web app to create."
-        }
-      },
       "skuName": {
         "type": "string",
         "defaultValue": "F1",
@@ -37,6 +30,15 @@
       }
     },
 
+    "variables": {
+        "location": "[resourceGroup.location()]",
+        "prefix": "[resourceGroup.name()]",
+
+        "hostingPlanName": "[concat(variables('prefix'), '-hostingplan')]",
+        "webAppName": "[variables('prefix')]",
+        "cognitiveServicesCvName": "[concat(variables('prefix'), '-cv')]",
+        "cognitiveServicesFaceName": "[concat(variables('prefix'), '-face')]"
+    },
 
     "resources": [
         {
@@ -46,7 +48,7 @@
                 "name": "F0"
             },
             "kind": "Face",
-            "name": "[concat(parameters('webSiteName'), '-face')]",
+            "name": "[variables('cognitiveServicesFaceName')]",
             "apiVersion": "2016-02-01-preview",
             "location": "[resourceGroup.location()]",
             "properties": {},
@@ -61,7 +63,7 @@
                 "name": "F0"
             },
             "kind": "ComputerVision",
-            "name": "[concat(parameters('webSiteName'), '-cv')]",
+            "name": "[variables('cognitiveServicesCvName')]",
             "apiVersion": "2016-02-01-preview",
             "location": "[resourceGroup.location()]",
             "properties": {},
@@ -71,35 +73,35 @@
         },
       {
         "apiVersion": "2015-08-01",
-        "name": "[concat(parameters('webSiteName'), '-hostingplan')]",
+        "name": "[variables('hostingPlanName')]",
         "type": "Microsoft.Web/serverfarms",
-        "location": "[parameters('location')]",
+        "location": "[variables('location')]",
         "tags": {
           "displayName": "HostingPlan"
         },
         "sku": {
           "name": "[parameters('skuName')]",
-          "capacity": "[parameters('skuCapacity')]"
+          "capacity": "1"
         },
         "properties": {
-          "name": "[concat(parameters('webSiteName'), '-hostingplan')]"
+          "name": "[variables('hostingPlanName')]"
         }
       },
       {
         "apiVersion": "2015-08-01",
-        "name": "[parameters('webSiteName')]",
+        "name": "[variables('webAppName')]",
         "type": "Microsoft.Web/sites",
-        "location": "[parameters('location')]",
+        "location": "[variables('location')]",
         "tags": {
-          "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', concat(parameters('webSiteName'), '-hostingplan'))]": "Resource",
+          "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]": "Resource",
           "displayName": "Website"
         },
         "dependsOn": [
-          "[concat('Microsoft.Web/serverfarms/', concat(parameters('webSiteName'), '-hostingplan'))]"
+          "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
         ],
         "properties": {
-          "name": "[parameters('webSiteName')]",
-          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('webSiteName'), '-hostingplan'))]",
+          "name": "[variables('webAppName')]",
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
           "siteConfig": {
               "appSettings": [
                 { "name": "CV_KEY", "value": "" },
@@ -113,7 +115,7 @@
             "name": "web",
             "type": "sourcecontrols",
             "dependsOn": [
-                "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
+                "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
               ],
             "properties": {
               "RepoUrl": "[parameters('repoURL')]",
