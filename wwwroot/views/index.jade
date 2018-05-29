@@ -1,0 +1,35 @@
+extends layout
+
+block innerwrapper
+  img.cloudSvg(src='https://appservice.azureedge.net/images/clouds.svg')
+
+block content
+  h1= title
+  p Welcome to the demo! Click below to start the application...
+  //input(type='button', style='width: 100px;', text='start')
+
+  .videoContainer
+    video.videoElement(autoplay='true')
+    .videoLabel Start
+
+  .toggleVideo(onClick='toggleVideo();') Start Video
+  script.
+    var elem = document.querySelector(".toggleVideo");
+    var videoElem = document.querySelector(".videoElement");
+    function toggleVideo() {
+      if (elem.innerText == "Start Video") {
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+        if (navigator.getUserMedia) {       
+          navigator.getUserMedia({video: true}, function(stream) {
+            videoElem.src = window.URL.createObjectURL(stream);
+            elem.innerText = "Stop Video";
+          }, function(e) {
+            console.log(e);
+          });
+        }       
+      }
+      else {
+        videoElem.src = null;
+        elem.innerText = "Start Video";
+      }
+    }
