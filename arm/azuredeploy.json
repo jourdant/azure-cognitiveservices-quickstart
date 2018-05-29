@@ -71,7 +71,7 @@
         },
       {
         "apiVersion": "2015-08-01",
-        "name": "[parameters('hostingPlanName')]",
+        "name": "[concat(parameters('webSiteName'), '-hostingplan')]",
         "type": "Microsoft.Web/serverfarms",
         "location": "[parameters('location')]",
         "tags": {
@@ -91,27 +91,23 @@
         "type": "Microsoft.Web/sites",
         "location": "[parameters('location')]",
         "tags": {
-          "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]": "Resource",
+          "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', concat(parameters('webSiteName'), '-hostingplan'))]": "Resource",
           "displayName": "Website"
         },
         "dependsOn": [
-          "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]"
+          "[concat('Microsoft.Web/serverfarms/', concat(parameters('webSiteName'), '-hostingplan'))]"
         ],
         "properties": {
           "name": "[parameters('webSiteName')]",
-          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', concat(parameters('webSiteName'), '-hostingplan'))]",
+          "siteConfig": {
+              "appSettings": [
+                { "name": "CV_KEY", "value": "" },
+                { "name": "FACE_KEY", "value": "" }
+            ]
+          }
         },
         "resources": [
-          {
-            "apiVersion": "2015-08-01",
-            "name": "web",
-            "type": "config",
-            "dependsOn": [
-              "[concat('Microsoft.Web/sites/', parameters('webSiteName'))]"
-            ],
-            "properties": {
-            }
-          },
           {
             "apiVersion": "2015-08-01",
             "name": "web",
