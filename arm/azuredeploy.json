@@ -2,44 +2,41 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-      "skuName": {
-        "type": "string",
-        "defaultValue": "F1",
-        "allowedValues": [
-          "F1",
-          "B1",
-          "S1"
-        ],
-        "metadata": {
-          "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+        "skuName": {
+            "type": "string",
+            "defaultValue": "F1",
+            "allowedValues": [
+                "F1",
+                "B1",
+                "S1"
+            ],
+            "metadata": {
+                "description": "Describes plan's pricing tier and instance size. Check details at https://azure.microsoft.com/en-us/pricing/details/app-service/"
+            }
+        },
+        "repoURL": {
+            "type": "string",
+            "defaultValue": "https://github.com/jourdant/azure-cognitiveservices-quickstart.git",
+            "metadata": {
+                "description": "The URL for the GitHub repository that contains the project to deploy."
+            }
+        },
+        "branch": {
+            "type": "string",
+            "defaultValue": "master",
+            "metadata": {
+                "description": "The branch of the GitHub repository to use."
+            }
         }
-      },
-      "repoURL": {
-        "type": "string",
-        "defaultValue": "https://github.com/jourdant/azure-cognitiveservices-quickstart.git",
-        "metadata": {
-          "description": "The URL for the GitHub repository that contains the project to deploy."
-        }
-      },
-      "branch": {
-        "type": "string",
-        "defaultValue": "master",
-        "metadata": {
-          "description": "The branch of the GitHub repository to use."
-        }
-      }
     },
-
     "variables": {
-        "location": "[resourceGroup.location()]",
-        "prefix": "[resourceGroup.name()]",
-
+        "location": "[resourceGroup().location]",
+        "prefix": "[resourceGroup().name]",
         "hostingPlanName": "[concat(variables('prefix'), '-hostingplan')]",
         "webAppName": "[variables('prefix')]",
         "cognitiveServicesCvName": "[concat(variables('prefix'), '-cv')]",
         "cognitiveServicesFaceName": "[concat(variables('prefix'), '-face')]"
     },
-
     "resources": [
         {
             "comments": "Used for checking the faces in the images. Must be deployed in westus.",
@@ -50,7 +47,7 @@
             "kind": "Face",
             "name": "[variables('cognitiveServicesFaceName')]",
             "apiVersion": "2016-02-01-preview",
-            "location": "[resourceGroup.location()]",
+            "location": "[variables('location')]",
             "properties": {},
             "resources": [],
             "dependsOn": [],
@@ -65,66 +62,75 @@
             "kind": "ComputerVision",
             "name": "[variables('cognitiveServicesCvName')]",
             "apiVersion": "2016-02-01-preview",
-            "location": "[resourceGroup.location()]",
+            "location": "[variables('location')]",
             "properties": {},
             "resources": [],
             "dependsOn": [],
-            "tags": { }
+            "tags": {}
         },
-      {
-        "apiVersion": "2015-08-01",
-        "name": "[variables('hostingPlanName')]",
-        "type": "Microsoft.Web/serverfarms",
-        "location": "[variables('location')]",
-        "tags": {
-          "displayName": "HostingPlan"
-        },
-        "sku": {
-          "name": "[parameters('skuName')]",
-          "capacity": "1"
-        },
-        "properties": {
-          "name": "[variables('hostingPlanName')]"
-        }
-      },
-      {
-        "apiVersion": "2015-08-01",
-        "name": "[variables('webAppName')]",
-        "type": "Microsoft.Web/sites",
-        "location": "[variables('location')]",
-        "tags": {
-          "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]": "Resource",
-          "displayName": "Website"
-        },
-        "dependsOn": [
-          "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
-        ],
-        "properties": {
-          "name": "[variables('webAppName')]",
-          "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
-          "siteConfig": {
-              "appSettings": [
-                { "name": "CV_KEY", "value": "" },
-                { "name": "FACE_KEY", "value": "" }
-            ]
-          }
-        },
-        "resources": [
-          {
+        {
             "apiVersion": "2015-08-01",
-            "name": "web",
-            "type": "sourcecontrols",
-            "dependsOn": [
-                "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
-              ],
+            "name": "[variables('hostingPlanName')]",
+            "type": "Microsoft.Web/serverfarms",
+            "location": "[variables('location')]",
+            "tags": {
+                "displayName": "HostingPlan"
+            },
+            "sku": {
+                "name": "[parameters('skuName')]",
+                "capacity": "1"
+            },
             "properties": {
-              "RepoUrl": "[parameters('repoURL')]",
-              "branch": "[parameters('branch')]",
-              "IsManualIntegration": true
+                "name": "[variables('hostingPlanName')]"
             }
-          }
-        ]
-      }
+        },
+        {
+            "apiVersion": "2015-08-01",
+            "name": "[variables('webAppName')]",
+            "type": "Microsoft.Web/sites",
+            "location": "[variables('location')]",
+            "tags": {
+                "[concat('hidden-related:', resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', variables('hostingPlanName'))]": "Resource",
+                "displayName": "Website"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.Web/serverfarms/', variables('hostingPlanName'))]"
+            ],
+            "properties": {
+                "name": "[variables('webAppName')]",
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
+                "siteConfig": {
+                    "appSettings": [
+                        {
+                            "name": "WEBSITE_NODE_DEFAULT_VERSION",
+                            "value": "6.9.1"
+                        },
+                        {
+                            "name": "CV_KEY",
+                            "value": ""
+                        },
+                        {
+                            "name": "FACE_KEY",
+                            "value": ""
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "apiVersion": "2015-08-01",
+                    "name": "web",
+                    "type": "sourcecontrols",
+                    "dependsOn": [
+                        "[concat('Microsoft.Web/sites/', variables('webAppName'))]"
+                    ],
+                    "properties": {
+                        "RepoUrl": "[parameters('repoURL')]",
+                        "branch": "[parameters('branch')]",
+                        "IsManualIntegration": true
+                    }
+                }
+            ]
+        }
     ]
-  }
-  
+}
