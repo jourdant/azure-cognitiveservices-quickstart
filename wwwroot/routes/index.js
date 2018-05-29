@@ -4,19 +4,40 @@ var router = express.Router();
 /* GET home page. */
 console.log("loading index route");
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Microsoft Azure + Cognitive Services' });
+  res.render('index', { title: 'Microsoft Azure + Cognitive Services', apiKey: process.env.CV_KEY });
 });
 
+const toFile = require('data-uri-to-file');
+const request = require('request');
+var http = require('http');
 
-var multer = require('multer');
-var upload = multer();
-console.log("loading webcam upload route");
+router.post('/upload', function(req, res) {
+  if (!req.body.data) {
+    console.log('No files were uploaded.');
+    return res.status(400).send('No files were uploaded.');
+  }
+  
+  // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+  let file = toFile(req.body.data).then(file => {
+    var key = "f29da4567c3d4d92afcdc8663be6dc6f";
+    var uriBase = "https://australiaeast.api.cognitive.microsoft.com/vision/v2.0/analyze";
 
-router.route("/upload")
-    /* replace foo-bar with your form field-name */
-    .post(upload.single("data"), function(req, res){
-       console.log(JSON.stringify(req.files));
-       res.json(JSON.stringify(req.files));
-    });
+    var options = {
+      host: "australiaeast.api.cognitive.microsoft.com",
+      path: "/vision/v2.0/analyze",
+      method: "POST",
+      headers: {
+          "Content-Type": "application/octet-stream",
+          "Ocp-Apim-Subscription-Key": key
+      }
+    };
+
+
+    //console.log(file.mimeType, file.data, file.extension);
+  });;
+
+    res.send('File uploaded!');
+});
+
 
 module.exports = router;
