@@ -22,21 +22,30 @@ router.post('/upload', function(req, res) {
     var key = "f29da4567c3d4d92afcdc8663be6dc6f";
     var uriBase = "https://australiaeast.api.cognitive.microsoft.com/vision/v2.0/analyze";
 
-    var options = {
-      host: "australiaeast.api.cognitive.microsoft.com",
-      path: "/vision/v2.0/analyze",
-      method: "POST",
+    request({
+      url: uriBase,
       headers: {
-          "Content-Type": "application/octet-stream",
-          "Ocp-Apim-Subscription-Key": key
-      }
-    };
+        'Content-Type' : 'application/octet-stream',
+        "Ocp-Apim-Subscription-Key": key
+      },
+      encoding: null,
+      method: 'POST',
+      body: req.body.data,
+      encoding: null
+     }, (error, response, body) => {
+          if (error) {
+            console.log(error);
+             res.json({name : error});
+          } else {
+            console.log(response.body);
+            res.json(JSON.parse(response.body.toString()));
+          }
+     });
 
+     //res.end("ok");
 
     //console.log(file.mimeType, file.data, file.extension);
-  });;
-
-    res.send('File uploaded!');
+  });
 });
 
 
