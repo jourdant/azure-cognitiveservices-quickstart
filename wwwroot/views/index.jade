@@ -1,14 +1,17 @@
 extends layout
 
+block head
+  script(src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js")
+
 block innerwrapper
   img.cloudSvg(src='https://appservice.azureedge.net/images/clouds.svg')
 
 block content
   h1= title
   p Welcome to the demo! Click below to start the application...
-  //input(type='button', style='width: 100px;', text='start')
 
   .videoContainer
+    img.videoCanvas(height=0, width=0)
     video.videoElement(autoplay='true')
     .videoLabel Start
 
@@ -16,20 +19,68 @@ block content
   script.
     var elem = document.querySelector(".toggleVideo");
     var videoElem = document.querySelector(".videoElement");
+    var canvas = document.querySelector(".videoCanvas");
+    var timer = null;
+
+    var stream, imageCapture;
+    function getMediaStream()
+    {
+        window.navigator.mediaDevices.getUserMedia({video: true, audio: false})
+        .then(function(mediaStream)
+        { 
+            elem.innerText = "Stop Video";
+            stream = mediaStream; 
+            let mediaStreamTrack = mediaStream.getVideoTracks()[0];
+            imageCapture = new ImageCapture(mediaStreamTrack);
+            videoElem.src = window.URL.createObjectURL(stream);
+            timer = setInterval(snapshot, 1500);
+        })
+        .catch(error);
+    }
+
+    function error(error) { console.error('error:', error); }
+
+    function takePhoto()
+    { 
+        imageCapture.takePhoto()
+        .then(blob => {
+            let url = window.URL; 
+            canvas.src = url.createObjectURL(blob);
+            console.log(canvas.src);
+            url.revokeObjectURL(blob);
+
+            var reader = new FileReader();
+            reader.onload = function(event){
+              var fd = new FormData();
+              fd.append('fname', 'image.jpg');
+              fd.append('data', event.target.result);
+              $.ajax({
+                  type: 'POST',
+                  url: '/upload',
+                  data: fd,
+                  processData: false,
+                  contentType: false
+              }).done(function(data) {
+                console.log(data);
+            });
+          };
+          reader.readAsDataURL(blob); 
+        })
+        .catch(error);
+    }; 
+
     function toggleVideo() {
       if (elem.innerText == "Start Video") {
-        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
-        if (navigator.getUserMedia) {       
-          navigator.getUserMedia({video: true}, function(stream) {
-            videoElem.src = window.URL.createObjectURL(stream);
-            elem.innerText = "Stop Video";
-          }, function(e) {
-            console.log(e);
-          });
-        }       
+          getMediaStream();  
       }
       else {
-        videoElem.src = null;
+        clearInterval(timer);
+        videoElem.src = "";
         elem.innerText = "Start Video";
       }
+    }
+
+    function snapshot() {
+      console.log("Uploading image to Azure...");
+      takePhoto();
     }
