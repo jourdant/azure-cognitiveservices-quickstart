@@ -1,0 +1,24 @@
+{
+  "name": "azure-cognitiveservices-quickstart",
+  "version": "1.0.0",
+  "description": "A quickstart tutorial for Microsoft Azure and Cognitive Services",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jourdant/azure-cognitiveservices-quickstart.git"
+  },
+  "keywords": [
+    "azure",
+    "cognitiveservices",
+    "ai"
+  ],
+  "author": "Jourdan Templeton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jourdant/azure-cognitiveservices-quickstart/issues"
+  },
+  "homepage": "https://github.com/jourdant/azure-cognitiveservices-quickstart#readme"
+}
